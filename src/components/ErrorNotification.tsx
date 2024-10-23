@@ -1,6 +1,10 @@
 import React from 'react';
 import classNames from 'classnames';
-import { ErrorNotificationProps } from '../types/Props';
+
+interface ErrorNotificationProps {
+  error: string | null;
+  onHideError: () => void;
+}
 
 export const ErrorNotification: React.FC<ErrorNotificationProps> = ({
   error,

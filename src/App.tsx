@@ -1,41 +1,43 @@
-import React, { useEffect, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { getTodos, addTodo, deleteTodo, USER_ID } from './api/todos';
 import { Todo } from './types/Todo';
 import { Header } from './components/Header';
 import { TodoList } from './components/TodoList';
 import { Footer } from './components/Footer';
 import { ErrorNotification } from './components/ErrorNotification';
-import { FilterStates } from './types/enums';
+import { ErrorMessages, FilterStates } from './types/enums';
 import { TodoItem } from './components/TodoItem';
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<FilterStates>(FilterStates.ALL);
+  const [filter, setFilter] = useState(FilterStates.ALL);
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [title, setTitle] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [title, setTitle] = useState('');
 
-  useEffect(() => {
-    const fetchTodos = async () => {
-      try {
-        const data = await getTodos();
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
-        setTodos(data);
-      } catch (err) {
-        setError('Unable to load todos');
-        const timer = setTimeout(() => {
-          setError(null);
-        }, 3000);
+  const fetchTodos = useCallback(async () => {
+    try {
+      const data = await getTodos();
 
-        return () => clearTimeout(timer);
-      }
-    };
-
-    fetchTodos();
+      setTodos(data);
+    } catch (err) {
+      setError(ErrorMessages.LOAD_TODOS);
+      setTimeout(() => {
+        setError(null);
+      }, 3000);
+    }
   }, []);
 
-  const handleAddTodo = async (): Promise<void> => {
+  const handleAddTodo = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     try {
       const newTempTodo: Todo = {
@@ -53,48 +55,35 @@ export const App: React.FC = () => {
       setTempTodo(null);
       setTitle('');
     } catch {
-      setError('Unable to add a todo');
+      setError(ErrorMessages.ADDING_TODOS);
       setTempTodo(null);
-      setTimeout(() => {
-        setError(null);
-      }, 3000);
     } finally {
       setIsLoading(false);
       setTimeout(() => {
-        const input =
-          document.querySelector<HTMLInputElement>('.todoapp__new-todo');
-
-        input?.focus();
+        inputRef.current?.focus();
       }, 100);
     }
-  };
+  }, [title]);
 
-  const handleDeleteTodo = async (todoId: number): Promise<void> => {
-    try {
-      await deleteTodo(todoId);
-      setTodos(prevTodos => prevTodos.filter(todo => todo.id !== todoId));
-    } catch {
-      setError('Unable to delete a todo');
-      const timer = setTimeout(() => {
-        setError(null);
-      }, 3000);
-
-      clearTimeout(timer);
-    } finally {
-      setTimeout(() => {
-        const input =
-          document.querySelector<HTMLInputElement>('.todoapp__new-todo');
-
-        input?.focus();
-      }, 100);
-    }
-  };
+  const handleDeleteTodo = useCallback(
+    async (todoId: number): Promise<void> => {
+      try {
+        await deleteTodo(todoId);
+        setTodos(prevTodos => prevTodos.filter(todo => todo.id !== todoId));
+      } catch {
+        setError(ErrorMessages.DELETING_TODOS);
+      } finally {
+        inputRef.current?.focus();
+      }
+    },
+    [],
+  );
 
   const handleHideError = () => {
     setError(null);
   };
 
-  const handleClearCompleted = async (): Promise<void> => {
+  const handleClearCompleted = useCallback(async (): Promise<void> => {
     const completedTodos = todos.filter(todo => todo.completed);
 
     try {
@@ -107,45 +96,49 @@ export const App: React.FC = () => {
       );
 
       if (hasErrors) {
-        setError('Unable to delete some completed todos');
-        setTimeout(() => {
-          setError(null);
-        }, 3000);
+        setError(ErrorMessages.DELETING_SOME_TODOS);
       }
     } catch {
-      setError('Unable to clear completed todos');
-      setTimeout(() => {
-        setError(null);
-      }, 3000);
+      setError(ErrorMessages.COMPLETED_TODOS);
     } finally {
-      setTimeout(() => {
-        const input =
-          document.querySelector<HTMLInputElement>('.todoapp__new-todo');
-
-        input?.focus();
-      }, 100);
+      inputRef.current?.focus();
     }
-  };
+  }, [handleDeleteTodo, todos]);
 
-  const filteredTodos = todos.filter(todo => {
-    switch (filter) {
-      case FilterStates.ACTIVE:
-        return !todo.completed;
-      case FilterStates.COMPLETED:
-        return todo.completed;
-      default:
-        return true;
-    }
-  });
+  const filteredTodos = useMemo(() => {
+    return todos.filter(todo => {
+      switch (filter) {
+        case FilterStates.ACTIVE:
+          return !todo.completed;
+        case FilterStates.COMPLETED:
+          return todo.completed;
+        default:
+          return true;
+      }
+    });
+  }, [todos, filter]);
 
   const hasTodos = todos.length > 0;
   const allCompleted = todos.length > 0 && todos.every(todo => todo.completed);
+
+  useEffect(() => {
+    if (error) {
+      setTimeout(() => {
+        setError(null);
+      }, 3000);
+    }
+  }, [error]);
+
+  useEffect(() => {
+    fetchTodos();
+  }, [fetchTodos]);
 
   return (
     <div className="todoapp">
       <h1 className="todoapp__title">todos</h1>
       <div className="todoapp__content">
         <Header
+          inputRef={inputRef}
           allCompleted={allCompleted}
           onAddTodo={handleAddTodo}
           isLoading={isLoading}

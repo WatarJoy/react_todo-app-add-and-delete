@@ -1,6 +1,14 @@
 import React from 'react';
-import { TodoListProps } from '../types/Props';
+import { Todo } from '../types/Todo';
 import { TodoItem } from '../components/TodoItem';
+
+interface TodoListProps {
+  todos: Todo[];
+  onDelete: (todoId: number) => Promise<void>;
+  isLoading: boolean;
+  setIsLoading: (isLoading: boolean) => void;
+  isDeleting: boolean;
+}
 
 export const TodoList: React.FC<TodoListProps> = ({
   todos,

@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import classNames from 'classnames';
-import { TodoItemProps } from '../types/Props';
+import { Todo } from '../types/Todo';
+
+interface TodoItemProps {
+  todo: Todo;
+  onDelete: (todoId: number) => Promise<void>;
+  isLoading: boolean;
+}
 
 export const TodoItem: React.FC<TodoItemProps> = ({
   todo,
@@ -16,7 +22,10 @@ export const TodoItem: React.FC<TodoItemProps> = ({
   };
 
   return (
-    <div data-cy="Todo" className={`todo ${todo.completed ? 'completed' : ''}`}>
+    <div
+      data-cy="Todo"
+      className={classNames('todo', { completed: todo.completed })}
+    >
       <label
         className="todo__status-label"
         aria-label={`Mark todo as ${todo.completed ? 'incomplete' : 'complete'}`}

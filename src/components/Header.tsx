@@ -1,8 +1,20 @@
 import React from 'react';
 import classNames from 'classnames';
-import { HeaderProps } from '../types/Props';
+import { ErrorMessages } from '../types/enums';
+
+interface HeaderProps {
+  allCompleted: boolean;
+  onAddTodo: (title: string) => Promise<void>;
+  isLoading: boolean;
+  setError: (error: string | null) => void;
+  setIsLoading: (isLoading: boolean) => void;
+  title: string;
+  setTitle: (title: string) => void;
+  inputRef: React.RefObject<HTMLInputElement>;
+}
 
 export const Header: React.FC<HeaderProps> = ({
+  inputRef,
   allCompleted,
   onAddTodo,
   isLoading,
@@ -13,7 +25,7 @@ export const Header: React.FC<HeaderProps> = ({
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!title.trim()) {
-      setError('Title should not be empty');
+      setError(ErrorMessages.NAMING_TODOS);
       const timer = setTimeout(() => {
         setError(null);
       }, 3000);
@@ -35,6 +47,7 @@ export const Header: React.FC<HeaderProps> = ({
       />
       <form onSubmit={handleSubmit}>
         <input
+          ref={inputRef}
           data-cy="NewTodoField"
           type="text"
           className="todoapp__new-todo"

@@ -1,6 +1,14 @@
 import React from 'react';
-import { FooterProps } from '../types/Props';
 import { FilterStates } from '../types/enums';
+import { Todo } from '../types/Todo';
+import classNames from 'classnames';
+
+interface FooterProps {
+  todos: Todo[];
+  filter: FilterStates;
+  setFilter: (filterStates: FilterStates) => void;
+  onClearCompleted: () => void;
+}
 
 export const Footer: React.FC<FooterProps> = ({
   todos,
@@ -21,7 +29,9 @@ export const Footer: React.FC<FooterProps> = ({
           <a
             key={state}
             href={`#/${state}`}
-            className={`filter__link ${filter === state ? 'selected' : ''}`}
+            className={classNames('filter__link', {
+              selected: filter === state,
+            })}
             data-cy={`FilterLink${state.charAt(0).toUpperCase() + state.slice(1)}`}
             onClick={() => setFilter(state)}
           >
