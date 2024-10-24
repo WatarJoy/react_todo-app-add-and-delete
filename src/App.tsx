@@ -16,7 +16,7 @@ import { TodoItem } from './components/TodoItem';
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ErrorMessages>(ErrorMessages.DEFAULT);
   const [filter, setFilter] = useState(FilterStates.ALL);
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +32,7 @@ export const App: React.FC = () => {
     } catch (err) {
       setError(ErrorMessages.LOAD_TODOS);
       setTimeout(() => {
-        setError(null);
+        setError(ErrorMessages.DEFAULT);
       }, 3000);
     }
   }, []);
@@ -80,7 +80,7 @@ export const App: React.FC = () => {
   );
 
   const handleHideError = () => {
-    setError(null);
+    setError(ErrorMessages.DEFAULT);
   };
 
   const handleClearCompleted = useCallback(async (): Promise<void> => {
@@ -123,9 +123,11 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     if (error) {
-      setTimeout(() => {
-        setError(null);
+      const timer = setTimeout(() => {
+        setError(ErrorMessages.DEFAULT);
       }, 3000);
+
+      return () => clearTimeout(timer);
     }
   }, [error]);
 

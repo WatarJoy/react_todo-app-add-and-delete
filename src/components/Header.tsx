@@ -6,7 +6,7 @@ interface HeaderProps {
   allCompleted: boolean;
   onAddTodo: (title: string) => Promise<void>;
   isLoading: boolean;
-  setError: (error: string | null) => void;
+  setError: (error: ErrorMessages) => void;
   setIsLoading: (isLoading: boolean) => void;
   title: string;
   setTitle: (title: string) => void;
@@ -27,7 +27,7 @@ export const Header: React.FC<HeaderProps> = ({
     if (!title.trim()) {
       setError(ErrorMessages.NAMING_TODOS);
       const timer = setTimeout(() => {
-        setError(null);
+        setError(ErrorMessages.DEFAULT);
       }, 3000);
 
       return () => clearTimeout(timer);

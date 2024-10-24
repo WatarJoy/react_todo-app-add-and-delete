@@ -1,4 +1,5 @@
 export enum ErrorMessages {
+  DEFAULT = '',
   LOAD_TODOS = 'Unable to load todos',
   ADDING_TODOS = 'Unable to add a todo',
   NAMING_TODOS = 'Title should not be empty',
